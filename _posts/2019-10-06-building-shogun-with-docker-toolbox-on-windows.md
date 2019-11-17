@@ -97,6 +97,6 @@ After going through the whole shebang described above, you'll be able to perform
 
 # What doesn't work?
 
-As I mentioned earlier, it's not a fully working setup and I don't think it's even possible. Because of symlinks involved you won't be able to run unit tests.
+Basically - everyting else. As I mentioned earlier, it's not a fully working setup and I don't think it's even possible. For instance, because of symlinks involved you won't be able to run unit tests.
 
 Good luck!
