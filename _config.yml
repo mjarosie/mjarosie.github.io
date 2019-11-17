@@ -1,6 +1,6 @@
 title: Maciek's blog
 description: >- 
-  The place on the Internet where I put my notes. Sharing is caring, right?
+  The place on the Internet where I share my notes. Sharing is caring, right?
 url: "https://mjarosie.github.io" 
 twitter_username: mjarosie
 github_username: mjarosie
@@ -18,3 +18,5 @@ minima:
 
 disqus:
   shortname: mjarosie-blog
+
+clicky_analytics: 101221712
