@@ -1,0 +1,20 @@
+title: Maciek's blog
+description: >- 
+  The place on the Internet where I put my notes. Sharing is caring, right?
+url: "https://mjarosie.github.io" 
+twitter_username: mjarosie
+github_username: mjarosie
+stackoverflow_username: mjarosie
+stackoverflow_user_id: "3088888"
+linkedin_username: maciej-jarosiewicz
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed
+
+minima:
+  date_format: "%e %B, %Y"
+
+disqus:
+  shortname: mjarosie-blog
