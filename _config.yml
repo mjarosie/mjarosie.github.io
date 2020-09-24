@@ -13,6 +13,11 @@ theme: minima
 plugins:
   - jekyll-feed
 
+header_pages:
+  - about.md
+  - categories.md
+  - tags.md
+
 minima:
   date_format: "%e %B, %Y"
 
