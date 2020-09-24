@@ -1,5 +1,6 @@
 ---
-categories: shogun docker-toolbox windows
+categories: ["Dev"]
+tags: ["Shogun", "Docker", "Docker Toolbox", "Windows"]
 date:   2019-10-16
 layout: post
 title:  "Building Shogun on Windows using Docker Toolbox"

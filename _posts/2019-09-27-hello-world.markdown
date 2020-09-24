@@ -1,5 +1,6 @@
 ---
-categories: meta
+categories: ["Meta"]
+tags: ["Meta"]
 date:   2019-09-27
 layout: post
 title:  "Hello world!"
