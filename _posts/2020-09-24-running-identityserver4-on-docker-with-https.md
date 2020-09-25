@@ -27,7 +27,7 @@ You've probably seen the diagram describing communication between these services
 
 ![Client Credentials Flow sequence diagram](/assets/2020-09-24-running-identityserver4-on-docker-with-https/client-credentials-flow-sequence-diagram.png)
 
-In order for the Client to be able to retrieve a resource from the API, first it needs to obtain a valid access token (shown as `(*)` in the above diagram) from the Identity Provider that's trusted by the API.
+In order for the Client to be able to retrieve a resource from the API, first it needs to obtain a valid access token (shown as `(*)` in the above diagram) from the Identity Provider that's trusted by the API. Even before that happens - the API service needs to retrieve the [JSON Web Key Set](https://tools.ietf.org/html/rfc7517#section-5) (JWK Set) from the Identity Provider so that it can [validate JWT tokens](https://tools.ietf.org/html/rfc7519#section-7.2) locally without the need to call the Identity Provider with every request (which is a huge advantage of using JWT tokens).
 
 When you're just running these services on your host machine, they all refer to each other by `localhost` addresses:
 
@@ -214,3 +214,5 @@ var disco = await client.GetDiscoveryDocumentAsync(
 ```
 
 Fully working example can be found [in this repository](https://github.com/mjarosie/IdentityServerDockerHttpsDemo).
+
+EDIT: Thanks to [u/odannyboy000](https://www.reddit.com/user/odannyboy000/) for pointing out the error in Client Credentials Flow diagram.
