@@ -12,7 +12,7 @@ Just to refresh - here's the Authorization Code Flow sequence diagram:
 
 ![Authorization Code Flow sequence diagram](/assets/2020-10-13-securing-saturn-framework-web-application-with-identityserver4-interactive/authorization-code-flow-sequence-diagram.png)
 
-Krzysztof Cieślak [has explained how to use the GitHub provider in Saturn](https://medium.com/lambda-factory/using-oauth-with-saturn-c8eba5d63e1c), but even though the setup is really similar, it still took me a while to make it work with IdentityServer4 properly, I've also struggled with logging out which I'll elaborate on more below.
+Krzysztof Cieślak [has explained how to use the GitHub provider in Saturn](https://medium.com/lambda-factory/using-oauth-with-saturn-c8eba5d63e1c), but even though the setup is really similar, it still took me a while to make it work with IdentityServer4 properly, I've also struggled with logging out which I'll elaborate on below.
 
 You can follow along by cloning the source code from [this repository](https://github.com/mjarosie/SaturnWithIdentityServerInteractive).
 
