@@ -29,7 +29,7 @@ Taking a look at the Client Credentials Flow diagram - it's the case of one serv
 
 ## JWT Authentication setup
 
-Let's first look at how the configuration of the API would look like [if we've written it in C#](https://identityserver4.readthedocs.io/en/latest/quickstarts/1_client_credentials.html#configuration):
+Let's first look at how the configuration of the API would look like [if we'd written it in C#](https://identityserver4.readthedocs.io/en/latest/quickstarts/1_client_credentials.html#configuration):
 
 {% highlight C# %}
 public class Startup
