@@ -2,6 +2,8 @@
 categories: ["Dev"]
 tags: ["Saturn", "IdentityServer4", "F#", ".NET"]
 date:  2020-10-04
+redirect_from:
+  - /dev/2020/09/24/securing-saturn-framework-api-with-identityserver4-client-credentials.html
 layout: post
 title:  "Securing an API written in Saturn Framework with Client Credentials Flow and IdentityServer4"
 ---
