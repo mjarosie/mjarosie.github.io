@@ -43,7 +43,7 @@ dotnet sln add .\src\IdentityServer\IdentityServer.csproj
 
 Then in `Config.cs` set up the `Clients` variable to:
 
-```C#
+{% highlight C# %}
 public static IEnumerable<Client> Clients =>
     new Client[]
     {
@@ -63,7 +63,7 @@ public static IEnumerable<Client> Clients =>
             AllowedScopes = { "openid", "profile", "scope2" }
         },
     };
-```
+{% endhighlight %}
 
 This should give you a ready-to-run instance with two logins: `alice` (password: `alice`) and `bob` (password: `bob`) and a set of client credentials (client_id: `interactive`, client_secret: `secret`). Sweet!
 
@@ -71,7 +71,7 @@ This should give you a ready-to-run instance with two logins: `alice` (password:
 
 To use the OpenID Authentication we need to set up the services to use Authentication, Cookie and OpenIdConnect handlers. In C# [we'd do it like this](https://identityserver4.readthedocs.io/en/latest/quickstarts/2_interactive_aspnetcore.html#creating-an-mvc-client):
 
-```C#
+{% highlight C# %}
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.IdentityModel.Tokens.Jwt;
@@ -103,13 +103,13 @@ public void ConfigureServices(IServiceCollection services)
 
     // ...
 }
-```
+{% endhighlight %}
 
 Luckily - [Saturn.Extensions.Authorization](https://saturnframework.org/reference/Saturn.Extensions.Authorization/global-saturn.html) package contains an [Application Computation Expression](https://saturnframework.org/reference/Saturn/saturn-application-applicationbuilder.html) Custom Operation: `use_open_id_auth_with_config` which helps us to achieve exactly this. In order to be able to use it - you need to add `nuget Saturn.Extensions.Authorization` to `paket.dependencies` and `Saturn.Extensions.Authorization` to `src\SaturnWithIdentityServerInteractive\paket.references` files. Then run `dotnet paket install` and `dotnet restore`.
 
 Looking at [the implementation](https://github.com/SaturnFramework/Saturn/blob/e2151f8839951baa5ea5616ea6002579cf4cb506/src/Saturn.Extensions.Authorization/OAuth.fs#L189) (as of 13.10.2020) we can see that the code is semantically similar to the C# equivalent mentioned above:
 
-```F#
+{% highlight FSharp %}
 /// Enables OpenId authentication with custom configuration
 [<CustomOperation("use_open_id_auth_with_config")>]
 member __.UseOpenIdAuthWithConfig(state: ApplicationState, (config: Action<OpenIdConnect.OpenIdConnectOptions>)) =
@@ -130,13 +130,13 @@ member __.UseOpenIdAuthWithConfig(state: ApplicationState, (config: Action<OpenI
         ServicesConfig = service::state.ServicesConfig
         AppConfigs = middleware::state.AppConfigs
         CookiesAlreadyAdded = true }
-```
+{% endhighlight %}
 
 If you're not sure why exactly do we specify different Schemes in the `authConfig` (as asked [here](https://stackoverflow.com/q/52492666)) - see [this brilliant answer](https://stackoverflow.com/a/52493428).
 
 We should use the `use_open_id_auth_with_config` operation like so:
 
-```F#
+{% highlight FSharp %}
 open Saturn
 open Microsoft.AspNetCore.Authentication
 open Microsoft.AspNetCore.Authentication.Cookies
@@ -162,11 +162,11 @@ let app = application {
     )
     // ...
 }
-```
+{% endhighlight %}
 
 How can we leverage this protection now? Let's say our application wants to access a protected secret of the user - their favourite colour. Our `Router.fs` would look like this:
 
-```F#
+{% highlight FSharp %}
 let protectedView = router {
     pipe_through ProtectedHandlers.protectedViewPipeline
     
@@ -194,11 +194,11 @@ let browserRouter = router {
 let appRouter = router {
     forward "" browserRouter
 }
-```
+{% endhighlight %}
 
 We've got the `defaultView` - the home page which can be accessed by anyone, and the `protectedView` (under `/protected`). It can be accessed only by authenticated users, and is set up like this (in `ProtectedHandlers.fs`):
 
-```F#
+{% highlight FSharp %}
 module ProtectedHandlers
 
 open Giraffe
@@ -237,7 +237,7 @@ let protectedHandler : HttpHandler = fun next ctx ->
         | Some secret -> return! htmlView (Protected.protectedResourceView userNameId secret) next ctx
         | None -> return! htmlView (Protected.noProtectedResourceView userNameId) next ctx
     }
-```
+{% endhighlight %}
 
 `protectedViewPipeline` uses the Giraffe's [`requiresAuthentication`](https://github.com/giraffe-fsharp/Giraffe/blob/master/DOCUMENTATION.md#requiresauthentication) together with [`challenge`](https://github.com/giraffe-fsharp/Giraffe/blob/master/DOCUMENTATION.md#challenge) - which uses the `OpenIdConnectDefaults.AuthenticationScheme` scheme (being equal to `"OpenIdConnect"` as mentioned above). __Pay special attention to this value__ - we don't want to be using `CookieAuthenticationDefaults.AuthenticationScheme` as this is a different scheme which doesn't handle the OpenIdConnect protocol. It will not redirect the user to the Identity Provider (`https://localhost:5001/account/login`), but to the application itself (`https://localhost:8085/account/login`) which will result in `404` error if you don't have the `account/login` endpoint. That's a no-no!
 
@@ -247,7 +247,7 @@ let protectedHandler : HttpHandler = fun next ctx ->
 
 There's one more bit which took me a while to figure out. Giraffe provides a [`signOut`](https://github.com/giraffe-fsharp/Giraffe/blob/master/DOCUMENTATION.md#signout) handler which signs the user out from a given authentication scheme. The documentation gives an example of how to use it:
 
-```F#
+{% highlight FSharp %}
 let logout = signOut "Cookie" >=> redirectTo false "/"
 
 let webApp =
@@ -261,11 +261,11 @@ let webApp =
                     route "/user/logout" >=> logout
                 ]
     ]
-```
+{% endhighlight %}
 
 Since we want to sign the user out of both `"Cookies"` and `"OpenIdConnect"` schemes - you'd probably try doing something similar in our Saturn router:
 
-```F#
+{% highlight FSharp %}
 let defaultView = router {
     // ...
     get "/logout" (Giraffe.Auth.signOut CookieAuthenticationDefaults.AuthenticationScheme // Sign out of "Cookies" scheme
@@ -283,11 +283,11 @@ let browserRouter = router {
 let appRouter = router {
     forward "" browserRouter
 }
-```
+{% endhighlight %}
 
 If you log in as `bob`, go to `/logout` page - you'll be logged out indeed - but the next time you'd like to log in - the IdentityServer session will still be active - so instead of being taken to the login screen (where now you'd like to log in as `alice`) - you'll be automatically redirected back to your app logged in as `bob`. [This StackOverflow question](https://stackoverflow.com/questions/47489966/) describes exactly this scenario. [It turns out](https://stackoverflow.com/a/51613121) - we need to use overloaded `SignOutAsync` function which accepts `AuthenticationParameters` but Giraffe doesn't offer it out of the box. Hence, we need to write our own wrapper for calling this function (the implementation is based on the [`signOut` function](https://github.com/giraffe-fsharp/Giraffe/blob/9f1ea96b796e6ecb41e862eb7c5d74776a19326a/src/Giraffe/Auth.fs#L32)):
 
-```F#
+{% highlight FSharp %}
 let signOutAndRedirect (authScheme : string) (redirectUrl: string) : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
@@ -313,7 +313,7 @@ let browserRouter = router {
 let appRouter = router {
     forward "" browserRouter
 }
-```
+{% endhighlight %}
 
 Let's try it again and it... works! Logging it as `bob`, then logging out and logging back in again - we'll be taken to the login page where we can log in as `alice` now.
 
