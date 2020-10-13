@@ -103,6 +103,15 @@ public void ConfigureServices(IServiceCollection services)
 
     // ...
 }
+
+// ...
+
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    // ...
+    app.UseAuthentication();
+    // ...
+}
 {% endhighlight %}
 
 Luckily - [Saturn.Extensions.Authorization](https://saturnframework.org/reference/Saturn.Extensions.Authorization/global-saturn.html) package contains an [Application Computation Expression](https://saturnframework.org/reference/Saturn/saturn-application-applicationbuilder.html) Custom Operation: `use_open_id_auth_with_config` which helps us to achieve exactly this. In order to be able to use it - you need to add `nuget Saturn.Extensions.Authorization` to `paket.dependencies` and `Saturn.Extensions.Authorization` to `src\SaturnWithIdentityServerInteractive\paket.references` files. Then run `dotnet paket install` and `dotnet restore`.
