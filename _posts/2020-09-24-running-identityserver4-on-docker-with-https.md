@@ -164,7 +164,7 @@ update-ca-certificates
 
 IdentityServer needs to refer to itself (IssuerUri value) as `https://identity-server:5001`, [see the configuration](https://github.com/mjarosie/IdentityServerDockerHttpsDemo/blob/master/src/IdentityServer/Startup.cs#L29):
 
-```c#
+{% highlight C# %}
 public void ConfigureServices(IServiceCollection services)
 {
     var builder = Environment.IsDevelopment() ?
@@ -177,10 +177,11 @@ public void ConfigureServices(IServiceCollection services)
         .AddInMemoryApiScopes(Config.ApiScopes)
         .AddInMemoryClients(Config.Clients);
 }
-```
+{% endhighlight %}
+
 API needs to refer to the Authority (IdentityServer) as `https://identity-server:5001`, [see the configuration](https://github.com/mjarosie/IdentityServerDockerHttpsDemo/blob/master/src/Api/Startup.cs#L28):
 
-```c#
+{% highlight C# %}
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddControllers();
@@ -197,11 +198,11 @@ public void ConfigureServices(IServiceCollection services)
 
         });
 }
-```
+{% endhighlight %}
 
 Client [must not be validating the issuer name](https://github.com/mjarosie/IdentityServerDockerHttpsDemo/blob/master/src/Client/Program.cs#L20) when retrieving discovery document as names won't match (`identity-server` vs. `localhost`):
 
-```c#
+{% highlight C# %}
 var disco = await client.GetDiscoveryDocumentAsync(
     new DiscoveryDocumentRequest
     {
@@ -211,7 +212,7 @@ var disco = await client.GetDiscoveryDocumentAsync(
             ValidateIssuerName = false
         },
     });
-```
+{% endhighlight %}
 
 Fully working example can be found [in this repository](https://github.com/mjarosie/IdentityServerDockerHttpsDemo).
 
