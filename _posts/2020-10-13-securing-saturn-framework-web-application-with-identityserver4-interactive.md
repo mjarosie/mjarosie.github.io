@@ -326,4 +326,4 @@ let appRouter = router {
 
 Let's try it again and it... works! Logging it as `bob`, then logging out and logging back in again - we'll be taken to the login page where we can log in as `alice` now.
 
-That should be it! If you've got any questions, feel free to post one below or reach out [through Twitter](https://twitter.com/mjarosie).
+That should be it! If you've got any questions, feel free to post one below or reach out [on Twitter](https://twitter.com/mjarosie).
