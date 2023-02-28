@@ -1,9 +1,12 @@
 # Magic's blog
 
-## Setup
+## Start the Jekyll server locally
 
-[Install dependencies](https://jekyllrb.com/docs/installation/ubuntu/):
+```bash
+docker compose up
+```
 
+## Manual setup
 
 ```bash
 sudo apt-get update && sudo apt-get upgrade

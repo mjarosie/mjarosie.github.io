@@ -1,9 +1,9 @@
 ---
 categories: ["Dev"]
 tags: ["Docker", "HTTPS", "certificates", "IdentityServer4", "oAuth", ".NET"]
-date:  2020-09-24
+date: 2020-09-24
 layout: post
-title:  "Securing an API while running IdentityServer4 on Docker with HTTPS enabled locally"
+title: "Securing an API while running IdentityServer4 on Docker with HTTPS enabled locally"
 ---
 
 Recently I've been trying to spin up an instance of [IdentityServer4](https://identityserver4.readthedocs.io/en/latest/) which would protect an example API with [Client Credentials Flow](https://auth0.com/docs/flows/client-credentials-flow) - just to get my head around it.
@@ -27,7 +27,9 @@ You've probably seen the diagram describing communication between these services
 
 ![Client Credentials Flow sequence diagram](/assets/2020-09-24-running-identityserver4-on-docker-with-https/client-credentials-flow-sequence-diagram.png)
 
-In order for the Client to be able to retrieve a resource from the API, first it needs to obtain a valid access token (shown as `(*)` in the above diagram) from the Identity Provider that's trusted by the API. Even before that happens - the API service needs to retrieve the [JSON Web Key Set](https://tools.ietf.org/html/rfc7517#section-5) (JWK Set) from the Identity Provider so that it can [validate JWT tokens](https://tools.ietf.org/html/rfc7519#section-7.2) locally without the need to call the Identity Provider with every request (which is a huge advantage of using JWT tokens).
+First of all - the API service needs to retrieve the [JSON Web Key Set](https://tools.ietf.org/html/rfc7517#section-5) (JWK Set) from the Identity Provider so that it can [validate JWT tokens](https://tools.ietf.org/html/rfc7519#section-7.2) locally without the need to call the Identity Provider with every request (which is a huge advantage of using JWT tokens). This might happen either on service startup or with a first incoming request.
+
+Later, in order for the Client to be able to retrieve a resource from the API, first it needs to obtain a valid access token (shown as `(*)` in the above diagram) from the Identity Provider that's trusted by the API.
 
 When you're just running these services on your host machine, they all refer to each other by `localhost` addresses:
 
@@ -48,13 +50,13 @@ Microsoft docs describe [how to use HTTPS in Docker Compose](https://docs.micros
 Running a variation of this command: `dotnet dev-certs https -ep %USERPROFILE%\.aspnet\https\aspnetapp.pfx -p password` (see Microsoft docs link above for details) will export a `.pfx` certificate. You then need to put it in your Docker container and redirect Kestrel to use it. After setting up environment variables your `docker-compose` could look something along these lines:
 
 ```yaml
-version: '3'
+version: "3"
 
 services:
   identity-server:
     build: ./src/IdentityServer
     ports:
-      - '5001:5001'
+      - "5001:5001"
     volumes:
       - ./src/IdentityServer:/root/IdentityServer:cached
       - ${USERPROFILE}/.aspnet/https:/https/
@@ -66,7 +68,7 @@ services:
   web-api:
     build: ./src/Api
     ports:
-        - '6001:6001'
+      - "6001:6001"
     volumes:
       - ./src/Api:/root/Api:cached
       - ${USERPROFILE}/.aspnet/https:/https/
@@ -77,7 +79,7 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
 ```
 
-Unfortunately, it's going to work only as long as these Docker services won't start calling each other. You will run into a certificate validation issues when the API tries to securely connect to the IdentityServer to validate the token (if you're lost - refer back to the Client Credentials Flow diagram at the top of this post). Even though the client connects to `localhost` (see the network diagram above) - API and IdentityServer need to refer to each other as `identity-service` and `web-api` respectively (those are the container names defined in docker-compose). The API won't be able to reach IdentityServer under `localhost:5001` anymore, and when it tries to connect to `identity-service:5001` the certificate validation fails, since the certificate wasn't issued for `identity-service`, but for `localhost`!
+Unfortunately, it's going to work only as long as these Docker services won't start calling each other. You will run into a certificate validation issues when the API tries to securely connect to the IdentityServer to pull the JWK Set mentioned above (if you're lost - refer back to the Client Credentials Flow diagram at the top of this post). Even though the client connects to `localhost` (see the network diagram above) - API and IdentityServer need to refer to each other as `identity-service` and `web-api` respectively (those are the container names defined in docker-compose). The API won't be able to reach IdentityServer under `localhost:5001` anymore, and when it tries to connect to `identity-service:5001` the certificate validation fails, since the certificate wasn't issued for `identity-service`, but for `localhost`!
 
 Another problem is the name of the issuer (the Authority setting in [the API configuration](https://identityserver4.readthedocs.io/en/latest/quickstarts/1_client_credentials.html#configuration)). By default IdentityServer sees itself as `localhost:5001` and when you run it and retrieve the [discovery endpoint](https://identityserver4.readthedocs.io/en/latest/endpoints/discovery.html) ([https://localhost:5001/.well-known/openid-configuration]) it will respond with a JSON with `issuer` value being equal to `https://localhost:5001`. But when the API calls the IdentityServer to check if the token is valid, by default it checks if the URL of the identity provider (`https://identity-service:5001`) is the same as the name of the token issuer that's extracted from the token (`https://localhost:5001`) - which is not the case!
 
@@ -118,13 +120,13 @@ $store.Close()
 We need to orchestrate `docker-compose` to put these certificates in containers and set up environment variables correctly:
 
 ```yaml
-version: '3'
+version: "3"
 
 services:
   identity-server:
     build: ./src/IdentityServer
     ports:
-      - '5001:5001'
+      - "5001:5001"
     volumes:
       - ./src/IdentityServer:/root/IdentityServer:cached
       - ./src/IdentityServer/certs:/https/
@@ -140,7 +142,7 @@ services:
   web-api:
     build: ./src/Api
     ports:
-        - '6001:6001'
+      - "6001:6001"
     volumes:
       - ./src/Api:/root/Api:cached
       - ./src/Api/certs:/https/
@@ -167,15 +169,15 @@ IdentityServer needs to refer to itself (IssuerUri value) as `https://identity-s
 {% highlight C# %}
 public void ConfigureServices(IServiceCollection services)
 {
-    var builder = Environment.IsDevelopment() ?
-        services.AddIdentityServer(x =>
-        {
-            x.IssuerUri = "https://identity-server:5001";
-        }) :
-        services.AddIdentityServer();
-    builder
-        .AddInMemoryApiScopes(Config.ApiScopes)
-        .AddInMemoryClients(Config.Clients);
+var builder = Environment.IsDevelopment() ?
+services.AddIdentityServer(x =>
+{
+x.IssuerUri = "https://identity-server:5001";
+}) :
+services.AddIdentityServer();
+builder
+.AddInMemoryApiScopes(Config.ApiScopes)
+.AddInMemoryClients(Config.Clients);
 }
 {% endhighlight %}
 
@@ -184,7 +186,7 @@ API needs to refer to the Authority (IdentityServer) as `https://identity-server
 {% highlight C# %}
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddControllers();
+services.AddControllers();
 
     services.AddAuthentication("Bearer")
         .AddJwtBearer("Bearer", options =>
@@ -197,6 +199,7 @@ public void ConfigureServices(IServiceCollection services)
             };
 
         });
+
 }
 {% endhighlight %}
 
@@ -204,14 +207,14 @@ Client [must not be validating the issuer name](https://github.com/mjarosie/Iden
 
 {% highlight C# %}
 var disco = await client.GetDiscoveryDocumentAsync(
-    new DiscoveryDocumentRequest
-    {
-        Address = "https://localhost:5001",
-        Policy =
-        {
-            ValidateIssuerName = false
-        },
-    });
+new DiscoveryDocumentRequest
+{
+Address = "https://localhost:5001",
+Policy =
+{
+ValidateIssuerName = false
+},
+});
 {% endhighlight %}
 
 Fully working example can be found [in this repository](https://github.com/mjarosie/IdentityServerDockerHttpsDemo).
