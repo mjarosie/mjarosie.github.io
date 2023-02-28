@@ -25,7 +25,11 @@
   h5,
   h6 {
     > a {
-      color: inherit;
+      &,
+      &:visited {
+        color: inherit;
+      }
+
       &:active,
       &:focus,
       &:hover {
