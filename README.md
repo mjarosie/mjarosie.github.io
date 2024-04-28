@@ -25,3 +25,19 @@ gem install jekyll bundler
 bundle install
 bundle exec jekyll serve --livereload
 ```
+
+## With Docker
+
+### Building the static page
+
+```bash
+export JEKYLL_VERSION=3.8.5
+docker run --rm --volume="$PWD:/srv/jekyll" -it jekyll/jekyll:$JEKYLL_VERSION jekyll build
+```
+
+### Starting the server
+
+```bash
+export JEKYLL_VERSION=3.8.5
+docker run --rm --volume="$PWD:/srv/jekyll" -p 4000:4000 -it jekyll/jekyll:$JEKYLL_VERSION jekyll serve --watch --drafts
+```
